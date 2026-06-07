@@ -9,10 +9,12 @@
 | レイヤー | 技術 | バージョン方針 |
 |---------|------|--------------|
 | フロントエンド | Vite + React + TypeScript | 最新安定版 |
-| ルーティング | React Router v7 | 最新安定版 |
+| ルーティング・初期データ取得 | React Router v7 | 最新安定版 |
+| スタイリング | Tailwind CSS | 最新安定版 |
 | BaaS（DB / Realtime / API） | Supabase | 最新安定版 |
 | ホスティング（フロント） | Vercel | - |
 | ホスティング（DB） | Supabase（無料枠） | - |
+| meta タグ管理 | react-helmet-async | 最新安定版 |
 
 ---
 
@@ -83,5 +85,6 @@ GitHub リポジトリ
 |--------|------|
 | `VITE_SUPABASE_URL` | Supabase プロジェクトURL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase 公開APIキー |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase 管理者キー（Edge Function のみ使用。フロントエンドには公開しない） |
 
 `.env.local` で管理し、Vercelのプロジェクト設定にも登録する。
