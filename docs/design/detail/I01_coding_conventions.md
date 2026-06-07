@@ -225,8 +225,9 @@ export function VoteResults({ returnTimeVotes, afterpartyVotes }: VoteResultsPro
 ### 基本ルール
 
 - スタイルは Tailwind CSS のユーティリティクラスのみで記述する
-- `index.css` には `@tailwind base; @tailwind components; @tailwind utilities;` のみ記述する
-- カスタム CSS は書かない。ただし Tailwind で対応できない場合（アニメーション等）は `tailwind.config.ts` に追記する
+- `index.css` には `@import "tailwindcss";` のみ記述する（Tailwind CSS v4）
+- `vite.config.ts` に `@tailwindcss/vite` プラグインを追加する（postcss.config.js・tailwind.config.ts は不要）
+- カスタム CSS は書かない。ただし Tailwind で対応できない場合（アニメーション等）は `index.css` の `@theme` ブロックでカスタムプロパティを定義する
 
 ### モバイルファースト
 

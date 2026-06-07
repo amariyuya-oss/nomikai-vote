@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /room/
+Disallow: /admin/
+Disallow: /complete
+Allow: /
