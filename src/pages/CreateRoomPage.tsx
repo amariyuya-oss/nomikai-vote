@@ -6,16 +6,24 @@ import { Button } from '../components/ui/Button'
 
 type FormData = {
   name: string
-  event_at: string
+  event_date: string
+  event_time: string
   location: string
   nearest_station: string
 }
 
 type FormErrors = Partial<Record<keyof FormData, string>>
 
+const TIME_OPTIONS = Array.from({ length: 26 }, (_, i) => {
+  const totalMinutes = 11 * 60 + i * 30
+  const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0')
+  const m = (totalMinutes % 60).toString().padStart(2, '0')
+  return `${h}:${m}`
+})
+
 export default function CreateRoomPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState<FormData>({ name: '', event_at: '', location: '', nearest_station: '' })
+  const [form, setForm] = useState<FormData>({ name: '', event_date: '', event_time: '', location: '', nearest_station: '' })
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -24,8 +32,12 @@ export default function CreateRoomPage() {
     const errs: FormErrors = {}
     if (!form.name.trim()) errs.name = '飲み会名を入力してください'
     else if (form.name.length > 50) errs.name = '50文字以内で入力してください'
-    if (!form.event_at) errs.event_at = '開催日時を入力してください'
-    else if (new Date(form.event_at) <= new Date()) errs.event_at = '開催日時は現在以降を指定してください'
+    if (!form.event_date) errs.event_date = '開催日を入力してください'
+    if (!form.event_time) errs.event_time = '開催時間を選択してください'
+    else if (form.event_date) {
+      const combined = new Date(`${form.event_date}T${form.event_time}`)
+      if (combined <= new Date()) errs.event_time = '開催日時は現在以降を指定してください'
+    }
     if (form.location.length > 100) errs.location = '100文字以内で入力してください'
     if (form.nearest_station.length > 50) errs.nearest_station = '50文字以内で入力してください'
     return errs
@@ -45,6 +57,7 @@ export default function CreateRoomPage() {
       return
     }
     setIsSubmitting(true)
+    const eventAt = new Date(`${form.event_date}T${form.event_time}`).toISOString()
     try {
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-room`,
@@ -56,7 +69,7 @@ export default function CreateRoomPage() {
           },
           body: JSON.stringify({
             name: form.name.trim(),
-            event_at: new Date(form.event_at).toISOString(),
+            event_at: eventAt,
             location: form.location.trim() || undefined,
             nearest_station: form.nearest_station.trim() || undefined,
           }),
@@ -79,7 +92,7 @@ export default function CreateRoomPage() {
           adminToken: admin_token,
           expiresAt: expires_at,
           roomName: form.name.trim(),
-          eventAt: new Date(form.event_at).toISOString(),
+          eventAt,
         }),
       )
       navigate('/complete')
@@ -118,16 +131,39 @@ export default function CreateRoomPage() {
               error={errors.name}
               placeholder="例: 営業部歓迎会"
             />
-            <Input
-              id="event_at"
-              label="開催日時"
-              type="datetime-local"
-              value={form.event_at}
-              onChange={(v) => setForm((f) => ({ ...f, event_at: v }))}
-              onBlur={() => handleBlur('event_at')}
-              required
-              error={errors.event_at}
-            />
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-gray-700">
+                開催日時<span className="text-red-500 ml-1">*</span>
+              </span>
+              <div className="flex gap-2">
+                <input
+                  id="event_date"
+                  type="date"
+                  value={form.event_date}
+                  onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
+                  onBlur={() => handleBlur('event_date')}
+                  className={`flex-1 px-3 py-2 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px] ${
+                    errors.event_date ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                <select
+                  id="event_time"
+                  value={form.event_time}
+                  onChange={(e) => setForm((f) => ({ ...f, event_time: e.target.value }))}
+                  onBlur={() => handleBlur('event_time')}
+                  className={`w-28 px-3 py-2 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px] ${
+                    errors.event_time ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">時間</option>
+                  {TIME_OPTIONS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              {errors.event_date && <p className="text-sm text-red-500">{errors.event_date}</p>}
+              {errors.event_time && <p className="text-sm text-red-500">{errors.event_time}</p>}
+            </div>
             <Input
               id="location"
               label="開催場所"
